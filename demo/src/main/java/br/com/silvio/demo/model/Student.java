@@ -1,13 +1,14 @@
 package br.com.silvio.demo.model;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Student {
 
     private int id;
     private String name;
-    public static ArrayList<Student> studentList;
+    public static List<Student> studentList;
 
     public int getId() {
         return id;
