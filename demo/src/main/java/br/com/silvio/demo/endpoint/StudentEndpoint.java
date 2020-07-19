@@ -1,5 +1,8 @@
 package br.com.silvio.demo.endpoint;
 
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,44 +14,45 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.silvio.demo.error.CustomErrorType;
 import br.com.silvio.demo.model.Student;
+import br.com.silvio.demo.repository.StudentRepository;
 
 @RestController
 @RequestMapping("students")
 public class StudentEndpoint {
 
+    private final StudentRepository repository;
+
+    @Autowired
+    StudentEndpoint(StudentRepository repository) {
+        this.repository = repository;
+    }
+
     @GetMapping
-    public ResponseEntity<?> listAll(){
-        return new ResponseEntity<>(Student.studentList, HttpStatus.OK);
+    public ResponseEntity<?> listAll() {
+        return new ResponseEntity<>(repository.findAll(), HttpStatus.OK);
     }
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<?> getStudentById(@PathVariable("id") int id){
-        Student student = new Student();
-        student.setId(id);
-        int index = Student.studentList.indexOf(student);
-        if (index == -1)
-            return new ResponseEntity<>(new CustomErrorType("Student not found"),HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(Student.studentList.get(index), HttpStatus.OK);
+    public ResponseEntity<?> getStudentById(@PathVariable("id") Long id) {
+        Optional<Student> student = repository.findById(id);
+        return new ResponseEntity<>(student, HttpStatus.OK);
     }
 
     @PostMapping
     public ResponseEntity<?> save(@RequestBody Student student){
-        Student.studentList.add(student);
-        return new ResponseEntity<>(student,HttpStatus.OK);
+        return new ResponseEntity<>(repository.save(student),HttpStatus.OK);
     }
     
-    @DeleteMapping
-    public ResponseEntity<?> delete(@RequestBody Student student){
-        Student.studentList.remove(student);
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") Long id){
+        repository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping
     public ResponseEntity<?> update(@RequestBody Student student){
-        Student.studentList.remove(student);
-        Student.studentList.add(student);
+        repository.save(student);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
