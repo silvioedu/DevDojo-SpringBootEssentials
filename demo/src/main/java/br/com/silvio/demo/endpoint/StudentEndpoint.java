@@ -3,6 +3,7 @@ package br.com.silvio.demo.endpoint;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.silvio.demo.error.ResourceNotFoundException;
 import br.com.silvio.demo.model.Student;
 import br.com.silvio.demo.repository.StudentRepository;
 
@@ -24,7 +26,7 @@ public class StudentEndpoint {
     private final StudentRepository repository;
 
     @Autowired
-    StudentEndpoint(StudentRepository repository) {
+    StudentEndpoint(final StudentRepository repository) {
         this.repository = repository;
     }
 
@@ -34,25 +36,35 @@ public class StudentEndpoint {
     }
 
     @GetMapping(path = "/{id}")
-    public ResponseEntity<?> getStudentById(@PathVariable("id") Long id) {
-        Optional<Student> student = repository.findById(id);
+    public ResponseEntity<?> getStudentById(@PathVariable("id") final Long id) {
+        final Optional<Student> student = repository.findById(id);
         return new ResponseEntity<>(student, HttpStatus.OK);
     }
 
-    @PostMapping
-    public ResponseEntity<?> save(@RequestBody Student student){
-        return new ResponseEntity<>(repository.save(student),HttpStatus.OK);
+    @GetMapping(path = "/findByName/{name}")
+    public ResponseEntity<?> findStudentsByName(@PathVariable("name") final String name) {
+        return new ResponseEntity<>(repository.findByNameIgnoreCaseContaining(name), HttpStatus.OK);
     }
-    
+
+    @PostMapping
+    public ResponseEntity<?> save(@RequestBody final Student student) {
+        return new ResponseEntity<>(repository.save(student), HttpStatus.CREATED);
+    }
+
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity<?> delete(@PathVariable("id") Long id){
-        repository.deleteById(id);
+    public ResponseEntity<?> delete(@PathVariable("id") final Long id) {
+        try {
+            repository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new ResourceNotFoundException("Student not found for ID: " + id);
+        }
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping
-    public ResponseEntity<?> update(@RequestBody Student student){
+    public ResponseEntity<?> update(@RequestBody final Student student) {
         repository.save(student);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
 }
