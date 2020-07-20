@@ -23,6 +23,8 @@ import br.com.silvio.demo.repository.StudentRepository;
 @RequestMapping("students")
 public class StudentEndpoint {
 
+    private static final String STUDENT_NOT_FOUND = "Student not found for ID: ";
+
     private final StudentRepository repository;
 
     @Autowired
@@ -56,7 +58,7 @@ public class StudentEndpoint {
         try {
             repository.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
-            throw new ResourceNotFoundException("Student not found for ID: " + id);
+            throw new ResourceNotFoundException(STUDENT_NOT_FOUND + id);
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }
