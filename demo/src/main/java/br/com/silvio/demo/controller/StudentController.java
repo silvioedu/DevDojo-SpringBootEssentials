@@ -1,6 +1,8 @@
-package br.com.silvio.demo.endpoint;
+package br.com.silvio.demo.controller;
 
 import java.util.Optional;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -21,14 +23,14 @@ import br.com.silvio.demo.repository.StudentRepository;
 
 @RestController
 @RequestMapping("students")
-public class StudentEndpoint {
+public class StudentController {
 
     private static final String STUDENT_NOT_FOUND = "Student not found for ID: ";
 
     private final StudentRepository repository;
 
     @Autowired
-    StudentEndpoint(final StudentRepository repository) {
+    StudentController(final StudentRepository repository) {
         this.repository = repository;
     }
 
@@ -49,7 +51,7 @@ public class StudentEndpoint {
     }
 
     @PostMapping
-    public ResponseEntity<?> save(@RequestBody final Student student) {
+    public ResponseEntity<?> save(@RequestBody @Valid final Student student) {
         return new ResponseEntity<>(repository.save(student), HttpStatus.CREATED);
     }
 
